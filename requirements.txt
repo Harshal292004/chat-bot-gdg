@@ -3,3 +3,4 @@ langchain
 detect
 langchain-community
 langdetect
+huggingface_hub
