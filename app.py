@@ -2,6 +2,8 @@ import os
 from dotenv import load_dotenv
 import streamlit as st
 from langchain import HuggingFaceHub, LLMChain, PromptTemplate
+import re
+from langdetect import detect
 
 # Load environment variables
 load_dotenv()
@@ -15,12 +17,11 @@ if not api_key:
 model = "HuggingFaceH4/starchat-beta"
 llm = HuggingFaceHub(
     repo_id=model,
-    huggingfacehub_api_token=api_key,
+    huggingfacehub_api_token="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",
     model_kwargs={
         "min_length": 30,
         "max_new_tokens": 256,
-        "do_sample": True,
-        "temperature": 0.2,
+        "temperature": 0.3,
         "top_k": 50,
         "top_p": 0.95,
         "eos_token_id": 49155
@@ -29,17 +30,39 @@ llm = HuggingFaceHub(
 # Set up the prompt template
 prompt_template = PromptTemplate(
     input_variables=["user_input"],
-    template="Human: {user_input}\n respond in a helpful and friendly manner AI:"
+    template="Human: {user_input}\nAI: "
 )
 
 # Create the LLMChain
 llm_chain = LLMChain(prompt=prompt_template, llm=llm)
 
+def extract_english(text):
+    # Split the text into sentences
+    sentences = re.split(r'(?<=[.!?])\s+', text)
+    
+    english_sentences = []
+    for sentence in sentences:
+        try:
+            if detect(sentence) == 'en':
+                english_sentences.append(sentence)
+            else:
+                # Stop when we encounter a non-English sentence
+                break
+        except:
+            # If language detection fails, assume it's not English
+            break
+    
+    return ' '.join(english_sentences).strip()
+
+
+
 def generate_response(user_input):
     try:
         llm_reply = llm_chain.run(user_input)
-        reply = llm_reply.partition('<|end|>')[0]
-        return reply
+        # Split the reply at "AI:" and take the last part
+        reply = llm_reply.split("AI:")[-1].strip()
+        english_reply = extract_english(reply)
+        return english_reply
     except Exception as e:
         return f"An error occurred: {str(e)}"
 
