@@ -47,7 +47,6 @@ def extract_english(text):
                 # Stop when we encounter a non-English sentence
                 break
         except:
-            # If language detection fails, assume it's not English
             break
     
     return ' '.join(english_sentences).strip()
@@ -55,14 +54,12 @@ def extract_english(text):
 def generate_response(user_input):
     try:
         llm_reply = llm_chain.run(user_input)
-        # Split the reply at "AI:" and take the last part
         reply = llm_reply.split("AI:")[-1].strip()
         english_reply = extract_english(reply)
         return english_reply
     except Exception as e:
         return f"An error occurred: {str(e)}"
 
-# Only show the chat interface if an API token has been entered
 if api_key:
     llm_chain = create_llm_chain(api_key)
     
