@@ -66,6 +66,10 @@ if api_key:
     user_input = st.text_input("You:", "")
     if st.button("Send"):
         response = generate_response(user_input)
-        st.text_area("Chatbot:", response, height=200)
+        if len(response)==0:
+            st.text_area("Chatbot:", "Unfortunatly ,no response", height=100)
+        else:
+            st.text_area("Chatbot:", response, height=200)
+
 else:
     st.warning("Please enter your API token to start chatting.")
